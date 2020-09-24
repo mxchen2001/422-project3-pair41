@@ -23,6 +23,9 @@ public class Main {
 	private static final boolean DEBUG = true;
 	private static LinkedList<String> adj[]; //Adjacency Lists 
 	private static Set<String> wordSet;
+	/***** For BFS *****/
+	private static Queue<LinkedList<String>> adjList;
+
 	private static ArrayList<String> input;
 	
 	public static void main(String[] args) throws Exception {
@@ -49,7 +52,10 @@ public class Main {
 		// We will call this method before running our JUNIT tests.  So call it 
 		// only once at the start of main.
 		wordSet = makeDictionary();
-		System.out.println(wordSet);
+		adjList = new LinkedList<LinkedList<String>>();
+		if (DEBUG) System.out.println(wordSet);
+		initializeBFS();
+		if (DEBUG) printAdjList();
 	}
 	
 	/**
@@ -91,14 +97,67 @@ public class Main {
 		return null; // replace this line later with real return
 	}
     
-	
+	// TODO
+	// Other private static methods here
+	/********************* For Debugging *********************/
+	/*														 */
 	public static void printLadder(ArrayList<String> ladder) {
 		for (int i = 0; i < ladder.size(); i++) {
 			System.out.println(ladder.get(i));
 		}
 	}
-	// TODO
-	// Other private static methods here
+
+	public static void printAdjList() {
+		int index = 0;
+		if(adjList.isEmpty()) {
+			System.out.println("The BFS Queue is empty");
+			return;
+		}
+		for (LinkedList<String> list: adjList) {
+			System.out.print(index++);
+			for(String word: list) {
+				System.out.printf(" - %s", word);
+			}
+			System.out.println();
+		}
+	}
+	/*														 */
+	/*********************************************************/
+
+
+	/********************* Initialize BFS ********************/
+	/*									   					 */
+	public static void initializeBFS() {
+		for (String element: wordSet) {
+			LinkedList<String> currentWordList = initializeBFSHelper(element);
+			adjList.add(currentWordList);
+		}
+
+	}
+
+	public static LinkedList<String> initializeBFSHelper (String word) {
+		LinkedList<String> currentlyAdj = new LinkedList<String>();
+		currentlyAdj.add(word);
+		for(String element: wordSet) {
+			if (oneLetterDiff(word, element, word.length())) {
+				currentlyAdj.add(element);
+			}
+		}
+		return currentlyAdj;
+	}
+	/*														 */
+	/*********************************************************/
+
+	public static boolean oneLetterDiff(String original, String compared, int size) {
+		int counter = 0;
+		for (int i = 0; i < size; i++) {
+			if(original.charAt(i) != compared.charAt(i)) {
+				counter++;
+			}
+		}
+		if(counter == 1) return true;
+		return false;
+	}
 
 
 	/* Do not modify makeDictionary */
@@ -110,7 +169,7 @@ public class Main {
 			 * *** MAKE SURE TO REVERT CHANGES ***
 			 */
 			String fileName = "five_letter_words.txt";
-			if (DEBUG) fileName = "short_dict.txt";
+			if (DEBUG) fileName = "short_dict.txt"; // this line is custom
 			infile = new Scanner (new File(fileName));
 		} catch (FileNotFoundException e) {
 			System.out.println("Dictionary File not Found!");
