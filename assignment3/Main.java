@@ -21,10 +21,10 @@ public class Main {
 	
 	// static variables and constants only here.
 	private static final boolean DEBUG = true;
-	private static LinkedList<String> adj[]; //Adjacency Lists 
+	// private static LinkedList<String> adj[]; 
 	private static Set<String> wordSet;
-	/***** For BFS *****/
-	private static Queue<LinkedList<String>> adjList;
+	/***** For BFS and DFS *****/
+	private static Queue<LinkedList<String>> adjList; //Adjacency Lists 
 
 	private static ArrayList<String> input;
 	
@@ -54,7 +54,7 @@ public class Main {
 		wordSet = makeDictionary();
 		adjList = new LinkedList<LinkedList<String>>();
 		if (DEBUG) System.out.println(wordSet);
-		initializeBFS();
+		initializeAdj();
 		if (DEBUG) printAdjList();
 	}
 	
@@ -78,7 +78,7 @@ public class Main {
 
 		return input;
 	}
-	
+
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
 		
 		// Returned list should be ordered start to end.  Include start and end.
@@ -125,17 +125,17 @@ public class Main {
 	/*********************************************************/
 
 
-	/********************* Initialize BFS ********************/
+	/**(**************** Initialize BFS/DFS ******************/
 	/*									   					 */
-	public static void initializeBFS() {
+	public static void initializeAdj() {
 		for (String element: wordSet) {
-			LinkedList<String> currentWordList = initializeBFSHelper(element);
+			LinkedList<String> currentWordList = initializeAdjHelper(element);
 			adjList.add(currentWordList);
 		}
 
 	}
 
-	public static LinkedList<String> initializeBFSHelper (String word) {
+	public static LinkedList<String> initializeAdjHelper (String word) {
 		LinkedList<String> currentlyAdj = new LinkedList<String>();
 		currentlyAdj.add(word);
 		for(String element: wordSet) {
@@ -145,8 +145,6 @@ public class Main {
 		}
 		return currentlyAdj;
 	}
-	/*														 */
-	/*********************************************************/
 
 	public static boolean oneLetterDiff(String original, String compared, int size) {
 		int counter = 0;
@@ -158,6 +156,10 @@ public class Main {
 		if(counter == 1) return true;
 		return false;
 	}
+
+	/*														 */
+	/*********************************************************/
+
 
 
 	/* Do not modify makeDictionary */
