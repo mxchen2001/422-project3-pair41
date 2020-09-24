@@ -1,6 +1,6 @@
 # Project 3 Word Ladder
 ### Xige Michael Chen, xmc75
-### Jeong Woo Park, (update with EID)
+### Jeong Woo Park, jp56873
 
 The `five_letter_words.txt` file needs to be outside of the src folder while being tested. This is because the starter code for the assignment includes a `makeDictionary` method with this line in it: 
 
