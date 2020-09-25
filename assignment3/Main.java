@@ -12,7 +12,7 @@
  * Fall 2020
  */
 
-
+//git test
 package assignment3;
 import java.util.*;
 import java.io.*;
@@ -25,7 +25,7 @@ public class Main {
 	private static Set<String> wordSet;
 	/***** For BFS and DFS *****/
 	private static Queue<LinkedList<String>> adjList; //Adjacency Lists 
-
+	public int test123;
 	private static ArrayList<String> input;
 	
 	public static void main(String[] args) throws Exception {
