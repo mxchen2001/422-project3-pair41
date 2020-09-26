@@ -19,19 +19,14 @@ import java.util.*;
 import java.io.*;
 
 public class Main {
-	
-	// static variables and constants only here.
+	/******* DEBUG flags *******/
 	private static final boolean DEBUG = true;
 	private static final boolean DEBUG_SHORT = false;
-	// private static LinkedList<String> adj[]; 
-	private static Set<String> wordSet;
 	/***** For BFS and DFS *****/
 	private static ArrayList<LinkedList<String>> adjList; //Adjacency Lists 
-
-	private static ArrayList<String> wordladder;
-
-	private static ArrayList<String> input;
-	
+	private static Set<String> wordSet;
+	/**** Final Word Ladder ****/
+	private static ArrayList<String> wordladder;	
 	public static void main(String[] args) throws Exception {
 		
 		Scanner kb;	// input Scanner for commands
@@ -51,8 +46,8 @@ public class Main {
 			words = parse(kb);
 			if(words.isEmpty()) break;
 			if (DEBUG) print("Starting Word: " + words.get(0)); print("Ending Word: " + words.get(1));
-			// printLadder(getWordLadderDFS(words.get(0), words.get(1)));
-			printLadder(getWordLadderBFS(words.get(0), words.get(1)));
+			printLadder(getWordLadderDFS(words.get(0), words.get(1)));
+			// printLadder(getWordLadderBFS(words.get(0), words.get(1)));
 		}
 			
 		// TODO methods to read in words, output ladder
@@ -82,7 +77,7 @@ public class Main {
 		start = start.toUpperCase();
 		end = end.toUpperCase();
 		// Condition that the either input is "/quit"
-		if (start.equals("/quit") || end.equals("/quit")) {
+		if (start.toLowerCase().equals("/quit") || end.toLowerCase().equals("/quit")) {
 			return new ArrayList<String>();
 		}
 		ArrayList<String> input = new ArrayList<String>();
@@ -93,10 +88,15 @@ public class Main {
 		return input;
 	}
 
+	/******************* Helper Functions ********************/
+	/*														 */
+
+	// Clear the WordLadder for new output
 	public static void clearWordLadder() {
 		wordladder = new ArrayList<String>();
 	}
 
+	// Get the index of 'start' inside adjacency array
 	public static int getWordIndex(String start) {
 		// COULD BE UPDATED WITH BINARY SEARCH FOR OPTIMIZATION
 
@@ -110,6 +110,7 @@ public class Main {
 		return -1;
 	}
 
+	// For BFS, reverse the word ladder to show top: start and bottom: end
 	public static void reverse() {
 		ArrayList<String> temp = new ArrayList<String>();
 		for(int i = wordladder.size() - 1; i >= 0; i--) {
@@ -118,6 +119,7 @@ public class Main {
 		wordladder = temp;
 	}
 
+	// Check the entryPoint index is within bounds
 	public static void checkEntryPoint(int entryPoint) {
 		try {
 			adjList.get(entryPoint);
@@ -126,33 +128,7 @@ public class Main {
 		}
 	}
 
-	public static boolean DFSHelper(String start, String end, Set<String> visited) {
-		int entryPoint = getWordIndex(start);
-		// checks if the entry point is a valid index
-		visited.add(start);
-		wordladder.add(start);
-		if((adjList.get(entryPoint)).peek().equals(end)) return true;
-
-		boolean result = false;
-		for(int i = 1; i < (adjList.get(entryPoint)).size(); i++) {
-			String nextWord = adjList.get(entryPoint).get(i);
-			if (visited.contains(nextWord)) 
-				continue;
-			result = (result || DFSHelper(nextWord, end, visited));
-		}
-		if (!result && !start.equals(end)) wordladder.remove(wordladder.size() - 1);
-		return result;
-	}
-
-	public static Queue<String> populateNeighbor(int index) {
-		Queue<String> neighbors = new LinkedList<String>();
-		for (String element : adjList.get(index))
-			neighbors.add(element);
-		if(neighbors.isEmpty()) return neighbors;
-		neighbors.remove();
-		return neighbors;
-	}
-
+	// Returns ArrayList of neighbors of 'Node'
 	public static ArrayList<String> getNeighbors(String Node) {
 		int entryPoint = getWordIndex(Node);
 		ArrayList<String> result = new ArrayList<String>();
@@ -163,6 +139,37 @@ public class Main {
 
 	}
 
+	// Helper function that initializes a Queue of inital neighors to 'start'
+	public static Queue<String> populateNeighbor(int index) {
+		Queue<String> neighbors = new LinkedList<String>();
+		for (String element : adjList.get(index))
+			neighbors.add(element);
+		if(neighbors.isEmpty()) return neighbors;
+		neighbors.remove();
+		return neighbors;
+	}
+
+	// Recursive Algorithm of traversing the graph via Depth First Search
+	public static boolean DFSHelper(String start, String end, Set<String> visited) {
+		int entryPoint = getWordIndex(start);
+		// checks if the entry point is a valid index
+		visited.add(start);
+		wordladder.add(start);
+		if((adjList.get(entryPoint)).peek().equals(end)) return true;
+
+		boolean result = false;
+		for(int i = 1; i < (adjList.get(entryPoint)).size(); i++) {
+			if (result) return true;
+			String nextWord = adjList.get(entryPoint).get(i);
+			if (visited.contains(nextWord)) 
+				continue;
+			result = (false || DFSHelper(nextWord, end, visited));
+		}
+		if (!result && !start.equals(end)) wordladder.remove(wordladder.size() - 1);
+		return result;
+	}
+
+	// Recursive Algorithm of traversing the graph via Breadth First Search
 	public static boolean BFSHelper(String start, String end, Set<String> visited, Queue<String> neighbors) {
 		if(neighbors.isEmpty()) return false;
 		Queue<String> neighborsCopy = new LinkedList<String>();
@@ -177,7 +184,6 @@ public class Main {
 				wordladder.add(neighbor);
 				return true;
 			}
-			// first element of distantNeighor is the root neighbor
 			ArrayList<String> distantNeighbors = getNeighbors(neighbor);
 			LinkedList<String> currentNode = new LinkedList<String>();
 			currentNode.add(neighbor);
@@ -194,7 +200,7 @@ public class Main {
 			neighbors.remove();
 			wordStack.add(currentNode);
 		}
-		boolean result = (false || BFSHelper(start, end, visited, neighbors));
+		boolean result = (false || BFSHelper(start, end, visited ,neighbors));
 
 		if (result) {
 			String top = wordladder.get(wordladder.size() - 1);
@@ -207,32 +213,42 @@ public class Main {
 		}
 		return result;
 	}
+	/*														 */
+	/*				END OF HELPER FUNCTIONS					 */
+	/*********************************************************/
+
 
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
 		// Returned list should be ordered start to end.  Include start and end.
 		// If ladder is empty, return list with just start and end.
-		// TODO some code
 		clearWordLadder();
 		if (DFSHelper(start, end, new HashSet<String>())) return wordladder;
-		return new ArrayList<String>();
+		ArrayList<String> empty = new ArrayList<String>();
+		empty.add(start); 
+		empty.add(end);
+		return empty;
 	}
+
+
 	
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
 		// TODO some code
 		clearWordLadder();
 		int entryPoint = getWordIndex(start);
-		Set<String> visited = new HashSet<String>();
 		Queue<String> neighbors = populateNeighbor(entryPoint);
-		visited.add(start);
+		HashSet<String> visited = new HashSet<String>();
+		// visited.add(start);
 		if (BFSHelper(start, end, visited, neighbors)) {
 			wordladder.add(start);
 			reverse();
 			return wordladder;
 		}
-		return new ArrayList<String>();
+		ArrayList<String> empty = new ArrayList<String>();
+		empty.add(start); 
+		empty.add(end);
+		return empty;
 	}
     
-	// TODO
 	// Other private static methods here
 	/********************* For Debugging *********************/
 	/*														 */
