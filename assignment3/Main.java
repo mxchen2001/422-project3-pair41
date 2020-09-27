@@ -20,11 +20,12 @@ import java.io.*;
 
 public class Main {
 	/******* DEBUG flags *******/
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static final boolean DEBUG_SHORT = false;
 	/***** For BFS and DFS *****/
 	private static ArrayList<LinkedList<String>> adjList; //Adjacency Lists 
 	private static Set<String> wordSet;
+	private static Set<String> visited = new HashSet<String>();
 	/**** Final Word Ladder ****/
 	private static ArrayList<String> wordladder;	
 	public static void main(String[] args) throws Exception {
@@ -45,7 +46,7 @@ public class Main {
 		while(true) {
 			words = parse(kb);
 			if(words.isEmpty()) break;
-			if (DEBUG) print("Starting Word: " + words.get(0)); print("Ending Word: " + words.get(1));
+			if (DEBUG) { print("Starting Word: " + words.get(0)); print("Ending Word: " + words.get(1)); }
 			printLadder(getWordLadderDFS(words.get(0), words.get(1)));
 			// printLadder(getWordLadderBFS(words.get(0), words.get(1)));
 		}
@@ -72,8 +73,9 @@ public class Main {
 	 */
 	public static ArrayList<String> parse(Scanner keyboard) {
 		// TO DO
-		String start = keyboard.nextLine();
-		String end = keyboard.nextLine();
+		String words = keyboard.nextLine();
+		String start = words.substring(0, 5);
+		String end = words.substring(6, 11);
 		start = start.toUpperCase();
 		end = end.toUpperCase();
 		// Condition that the either input is "/quit"
@@ -83,7 +85,7 @@ public class Main {
 		ArrayList<String> input = new ArrayList<String>();
 		input.add(start);
 		input.add(end);
-		if (DEBUG) print("Starting Word: " + start); print("Ending Word: " + end);
+		if (DEBUG) { print("Starting Word: " + start); print("Ending Word: " + end); }
 
 		return input;
 	}
@@ -93,7 +95,8 @@ public class Main {
 
 	// Clear the WordLadder for new output
 	public static void clearWordLadder() {
-		wordladder = new ArrayList<String>();
+		wordladder.clear();
+		visited.clear();
 	}
 
 	// Get the index of 'start' inside adjacency array
@@ -136,7 +139,6 @@ public class Main {
 			result.add(adjList.get(entryPoint).get(i));
 		}
 		return result;
-
 	}
 
 	// Helper function that initializes a Queue of inital neighors to 'start'
@@ -149,8 +151,43 @@ public class Main {
 		return neighbors;
 	}
 
+	// Recursive Algorithm of traversing the graph via Depth First Search with optimization
+	public static boolean DFSHelperOpt(String start, String end) {
+		int entryPoint = getWordIndex(start);
+		wordladder.add(start);
+		visited.add(start);
+		if ((adjList.get(entryPoint)).peek().equals(end)) 
+			return true;
+		boolean result = false;
+		// This checks for works with similar letters compared to the start parameter
+		for (int i = 0; i < start.length(); i++){
+			char[] optimizedWordArr = start.toCharArray();
+			optimizedWordArr[i] = end.charAt(i);
+			String optimizedWord = String.valueOf(optimizedWordArr);
+			if (visited.contains(optimizedWord)) 
+				continue;
+			if ((adjList.get(entryPoint)).contains(optimizedWord)) {
+				visited.add(optimizedWord);
+				result = DFSHelperOpt(optimizedWord, end);
+			}
+			if (result)
+				return true;
+		}
+		for (int i = 1; i < (adjList.get(entryPoint)).size(); i++) {
+			String nextWord = adjList.get(entryPoint).get(i);
+			if (visited.contains(nextWord)) 
+				continue;
+			result = DFSHelperOpt(nextWord, end);
+			if (result)
+				return true;
+		}
+		if (!result) 
+			wordladder.remove(wordladder.size() - 1);
+		return false;
+	}
+
 	// Recursive Algorithm of traversing the graph via Depth First Search
-	public static boolean DFSHelper(String start, String end, Set<String> visited) {
+	public static boolean DFSHelperRec(String start, String end) {
 		int entryPoint = getWordIndex(start);
 		// checks if the entry point is a valid index
 		visited.add(start);
@@ -163,14 +200,54 @@ public class Main {
 			String nextWord = adjList.get(entryPoint).get(i);
 			if (visited.contains(nextWord)) 
 				continue;
-			result = (false || DFSHelper(nextWord, end, visited));
+			result = DFSHelperRec(nextWord, end);
 		}
-		if (!result && !start.equals(end)) wordladder.remove(wordladder.size() - 1);
+		if (!result) wordladder.remove(wordladder.size() - 1);
 		return result;
 	}
 
+	public static void addNeighbors(String Node, Queue<String> neighbors) {
+		int entryPoint = getWordIndex(Node);
+		for(int i = 0; i < adjList.get(entryPoint).size(); i++) {
+			if(!visited.contains(adjList.get(entryPoint).get(i))) 
+				neighbors.add(adjList.get(entryPoint).get(i));
+		}
+	}
+
+	public static boolean BFSHelperIt(String start, String end) {
+		Queue<String> neighbors = new LinkedList<String>();
+		addNeighbors(start, neighbors);
+		ArrayList<LinkedList<String>> wordStack = new ArrayList<LinkedList<String>>(); 
+		while(!neighbors.isEmpty()) {
+			String currentWord = neighbors.poll();
+			if(visited.contains(currentWord))
+				continue;
+			visited.add(currentWord);
+			LinkedList<String> currentNode = new LinkedList<String>();
+			currentNode.add(currentWord);
+			if(currentWord.equals(end)){
+				String top = currentWord;
+				wordladder.add(currentWord);
+				while (!top.equals(start)) {
+					for (int i = 0; i < wordStack.size(); i++) {
+						if((wordStack.get(i)).contains(top)) {
+							wordladder.add((wordStack.get(i)).getFirst());
+							break;
+						}
+					}
+					top = wordladder.get(wordladder.size() - 1);
+				}
+				return true;
+			} 
+			addNeighbors(currentWord, neighbors);
+			addNeighbors(currentWord, currentNode);
+			wordStack.add(currentNode);
+		}
+		return false;
+	}
+
 	// Recursive Algorithm of traversing the graph via Breadth First Search
-	public static boolean BFSHelper(String start, String end, Set<String> visited, Queue<String> neighbors) {
+	public static boolean BFSHelperRec(String start, String end, Queue<String> neighbors) {
 		if(neighbors.isEmpty()) return false;
 		Queue<String> neighborsCopy = new LinkedList<String>();
 		for (String element : neighbors)
@@ -200,7 +277,7 @@ public class Main {
 			neighbors.remove();
 			wordStack.add(currentNode);
 		}
-		boolean result = (false || BFSHelper(start, end, visited ,neighbors));
+		boolean result = (false || BFSHelperRec(start, end, neighbors));
 
 		if (result) {
 			String top = wordladder.get(wordladder.size() - 1);
@@ -222,7 +299,7 @@ public class Main {
 		// Returned list should be ordered start to end.  Include start and end.
 		// If ladder is empty, return list with just start and end.
 		clearWordLadder();
-		if (DFSHelper(start, end, new HashSet<String>())) return wordladder;
+		if (DFSHelperOpt(start, end)) return wordladder;
 		ArrayList<String> empty = new ArrayList<String>();
 		empty.add(start); 
 		empty.add(end);
@@ -236,10 +313,13 @@ public class Main {
 		clearWordLadder();
 		int entryPoint = getWordIndex(start);
 		Queue<String> neighbors = populateNeighbor(entryPoint);
-		HashSet<String> visited = new HashSet<String>();
 		// visited.add(start);
-		if (BFSHelper(start, end, visited, neighbors)) {
-			wordladder.add(start);
+		// if (BFSHelper(start, end, visited, neighbors)) {
+		// 	wordladder.add(start);
+		// 	reverse();
+		// 	return wordladder;
+		// }
+		if (BFSHelperIt(start, end)) {
 			reverse();
 			return wordladder;
 		}
@@ -253,8 +333,15 @@ public class Main {
 	/********************* For Debugging *********************/
 	/*														 */
 	public static void printLadder(ArrayList<String> ladder) {
+		if(ladder.size() == 2) {
+			if(!oneLetterDiff(ladder.get(0), ladder.get(1), ladder.get(0).length())) {
+				System.out.println("no word ladder can be found between " + ladder.get(0).toLowerCase() + " and " + ladder.get(1).toLowerCase() + ".");
+				return;
+			}
+		}
+		System.out.println("a " + Integer.toString(ladder.size() - 2) + "-rung word ladder exists between " + ladder.get(0).toLowerCase() + " and " + ladder.get(ladder.size() - 1).toLowerCase() + ".");
 		for (int i = 0; i < ladder.size(); i++) {
-			System.out.println(ladder.get(i));
+			System.out.println(ladder.get(i).toLowerCase());
 		}
 	}
 
@@ -277,7 +364,7 @@ public class Main {
 		System.out.println("LOLXD!!!!");
 	}
 
-	public static void print(String in) {
+	public static void print(Object in) {
 		System.out.println(in);
 	}
 	/*														 */
