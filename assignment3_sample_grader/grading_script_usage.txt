@@ -1,0 +1,68 @@
+## Intro and Requirements
+
+The grading script is `grade.py`. It should be run with Python 2.6 and it requires Maven's command line tool, `mvn`, to be present. ECE Kamek has both requirements.
+
+## Instructions for Students
+
+The grading script provided to you is the same script we will use to grade your assignment.  It is mandatory that you run this script and pass the limited number of sample JUnit test cases provided to you bundled up in the script.  The script is designed to be run on the ECE Linux 64-bit servers, and may not work properly on your own home machines.
+
+Once you have remote-copied the `assignmentX_sample_grader.zip` over to kamek into a new directory (perhaps called `ProjectX_script_test/`), unzip it. 
+
+You will now have a folder called `assignmentX_sample_grader/` in `ProjectX_script_test/` (or whatever you called it). Inside it should be `grade.py`, this usage file you are currently reading, an `assignmentX/` folder, and a `submissions/` folder.
+
+The path to the `assignmentX/` folder should be the first argument you pass to `grade.py`. 
+
+The path to the `submissions/` folder should be the second argument you pass to `grade.py`. The folder might contain some dummy submissions that you may remove whenever you have established that your grading script basically works (even if your solution has bugs). This folder is where submissions to be graded should be placed after remote-copying from your home machine.
+
+Once you have remote-copied your solution to the `submissions/` folder, go to the directory `assignmentX_sample_grader/` and run the script.
+
+## Usage
+
+Run the script like this: `python ./grade.py ./assignment1 ./submissions`
+
+The first argument to `grade.py` is a path to an assignment Maven submodule. It must be a submodule; the script expects the parent folder to be a multi-module Maven project.
+
+The second argument is a path to a submissions directory containing all submissions to be graded.
+
+It is generally safe to interrupt the script if desired using Ctrl+C. The script will clean up after itself, leaving everything in its original state except for a results folder that will remain.
+
+## Submission Format
+
+The folder provided as the second command-line argument to the grading script is where submissions to be graded should be placed. Each submission is a `.zip` file. Inside each zip file should be Java package folders and/or Java files.
+
+> **Note:** This is a description of the submission formats accepted by the grading script. See individual assignment instructions for the particular structure expected for that assignment. For example, a given assignment will expect certain Java classes to be in a certain package.
+
+This is a valid submission:
+
+```
+Project1_eid.zip
+- assignment1/
+  - SortTools.java
+```
+
+The zip can also have other package folders inside it. This is also a valid submission:
+
+```
+Project1_eid.zip
+- assignment1/
+  - my_subpackage/
+    - SubHelper.java
+  - SortTools.java
+  - Helper.java
+- anotherpackage/
+  - Main.java
+```
+
+And this is a valid submission of Java files that are in the default package:
+
+```
+submission.zip
+- ClassInDefaultPackage.java
+- AnotherClassInDefaultPackage.java
+```
+
+## Results
+
+The script's results will be in a folder called `grade_results_[timestamp]`. Directly inside will be a `Grade.csv`, ready to be imported into a Canvas grade book. Each zip in the submissions folder will have a corresponding subfolder inside the grade results folder with all test results inside, including a `FULL_TEST_RESULTS.txt` file containing a summary of all tests run.
+
+For more details, see the Assignments link on the class web page.
