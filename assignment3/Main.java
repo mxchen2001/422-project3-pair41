@@ -48,7 +48,7 @@ public class Main {
 			if(words.isEmpty()) break;
 			if (DEBUG) { print("Starting Word: " + words.get(0)); print("Ending Word: " + words.get(1)); }
 			printLadder(getWordLadderDFS(words.get(0), words.get(1)));
-			// printLadder(getWordLadderBFS(words.get(0), words.get(1)));
+			printLadder(getWordLadderBFS(words.get(0), words.get(1)));
 		}
 			
 		// TODO methods to read in words, output ladder
@@ -74,6 +74,7 @@ public class Main {
 	public static ArrayList<String> parse(Scanner keyboard) {
 		// TO DO
 		String words = keyboard.nextLine();
+		if(words.length() != 11) return new ArrayList<String>();
 		String start = words.substring(0, 5);
 		String end = words.substring(6, 11);
 		start = start.toUpperCase();
@@ -154,13 +155,16 @@ public class Main {
 	// Recursive Algorithm of traversing the graph via Depth First Search with optimization
 	public static boolean DFSHelperOpt(String start, String end) {
 		int entryPoint = getWordIndex(start);
+		int endPoint = getWordIndex(end);
+		if ((adjList.get(endPoint)).size() == 1 && visited.isEmpty()) 
+			return false;
 		wordladder.add(start);
 		visited.add(start);
 		if ((adjList.get(entryPoint)).peek().equals(end)) 
 			return true;
 		boolean result = false;
 		// This checks for works with similar letters compared to the start parameter
-		for (int i = 0; i < start.length(); i++){
+		for (int i = 0; i < start.length(); i++) {
 			char[] optimizedWordArr = start.toCharArray();
 			optimizedWordArr[i] = end.charAt(i);
 			String optimizedWord = String.valueOf(optimizedWordArr);
@@ -173,6 +177,28 @@ public class Main {
 			if (result)
 				return true;
 		}
+
+		// This checks for works with similar letters compared to the start parameter
+		// for (int i = 0; i < start.length(); i++) {
+		// 	char[] optimizedWordArr2 = start.toCharArray();
+		// 	if (optimizedWordArr2[i] == end.charAt(i))
+		// 		continue;
+		// 	char replacementLetter = optimizedWordArr2[i];
+		// 	String optimizedWord2 = String.valueOf(optimizedWordArr2);
+		// 	for(int k = 0; k < 26; k++) {
+		// 		char temp = (char)((((int)replacementLetter + k) % 26) + 65);
+		// 		optimizedWordArr2[i] = temp;
+		// 		optimizedWord2 = String.valueOf(optimizedWordArr2);
+		// 		if(wordSet.contains(optimizedWord2) && !visited.contains(optimizedWord2)) {
+		// 			visited.add(optimizedWord2);
+		// 			result = DFSHelperOpt(optimizedWord2, end);
+		// 			break;
+		// 		}
+		// 		if (result)
+		// 			return true;
+		// 	}
+		// }
+
 		for (int i = 1; i < (adjList.get(entryPoint)).size(); i++) {
 			String nextWord = adjList.get(entryPoint).get(i);
 			if (visited.contains(nextWord)) 
@@ -299,6 +325,8 @@ public class Main {
 		// Returned list should be ordered start to end.  Include start and end.
 		// If ladder is empty, return list with just start and end.
 		clearWordLadder();
+		start = start.toUpperCase();
+		end = end.toUpperCase();
 		if (DFSHelperOpt(start, end)) return wordladder;
 		ArrayList<String> empty = new ArrayList<String>();
 		empty.add(start); 
@@ -311,14 +339,8 @@ public class Main {
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
 		// TODO some code
 		clearWordLadder();
-		int entryPoint = getWordIndex(start);
-		Queue<String> neighbors = populateNeighbor(entryPoint);
-		// visited.add(start);
-		// if (BFSHelper(start, end, visited, neighbors)) {
-		// 	wordladder.add(start);
-		// 	reverse();
-		// 	return wordladder;
-		// }
+		start = start.toUpperCase();
+		end = end.toUpperCase();
 		if (BFSHelperIt(start, end)) {
 			reverse();
 			return wordladder;
@@ -358,14 +380,6 @@ public class Main {
 			}
 			System.out.println();
 		}
-	}
-
-	public static void printStatement() {
-		System.out.println("LOLXD!!!!");
-	}
-
-	public static void print(Object in) {
-		System.out.println(in);
 	}
 	/*														 */
 	/*********************************************************/
