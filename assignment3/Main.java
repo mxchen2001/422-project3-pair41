@@ -25,7 +25,7 @@ public class Main {
 	private static Set<String> wordSet;
 	/***** For BFS and DFS *****/
 	private static Queue<LinkedList<String>> adjList; //Adjacency Lists 
-
+	
 	private static ArrayList<String> input;
 	
 	public static void main(String[] args) throws Exception {
