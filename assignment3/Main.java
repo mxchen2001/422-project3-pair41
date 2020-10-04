@@ -24,8 +24,10 @@ public class Main {
 	private static final boolean DEBUG_SHORT = false;
 	/***** For BFS and DFS *****/
 	private static ArrayList<LinkedList<String>> adjList; //Adjacency Lists 
-	private static Set<String> wordSet;
+	public static Set<String> wordSet;
 	private static Set<String> visited = new HashSet<String>();
+
+	private static Set<String> cycleWords = new HashSet<String>();
 	/**** Final Word Ladder ****/
 	private static ArrayList<String> wordladder;	
 	public static void main(String[] args) throws Exception {
@@ -46,7 +48,7 @@ public class Main {
 		while(true) {
 			words = parse(kb);
 			if(words.isEmpty()) break;
-			if (DEBUG) { print("Starting Word: " + words.get(0)); print("Ending Word: " + words.get(1)); }
+			if (DEBUG) { System.out.println("Starting Word: " + words.get(0)); System.out.println("Ending Word: " + words.get(1)); }
 			printLadder(getWordLadderDFS(words.get(0), words.get(1)));
 			printLadder(getWordLadderBFS(words.get(0), words.get(1)));
 		}
@@ -61,8 +63,9 @@ public class Main {
 		wordSet = makeDictionary();
 		adjList = new ArrayList<LinkedList<String>>();
 		wordladder = new ArrayList<String>();
-		if (DEBUG_SHORT) System.out.println(wordSet);
 		initializeAdj();
+		initializeCycle();
+		if (DEBUG_SHORT) System.out.println(wordSet);
 		if (DEBUG) printAdjList();
 	}
 	
@@ -86,7 +89,7 @@ public class Main {
 		ArrayList<String> input = new ArrayList<String>();
 		input.add(start);
 		input.add(end);
-		if (DEBUG) { print("Starting Word: " + start); print("Ending Word: " + end); }
+		if (DEBUG) { System.out.println("Starting Word: " + start); System.out.println("Ending Word: " + end); }
 
 		return input;
 	}
@@ -107,7 +110,7 @@ public class Main {
 		for (int i = 0; i < adjList.size(); i++) {
 			String currentHead = (adjList.get(i)).get(0);
 			if (currentHead.equals(start)) {
-				if (DEBUG) print(start + " is indexed at: " + i);
+				if (DEBUG) System.out.println(start + " is indexed at: " + i);
 				return i;
 			}
 		}
@@ -165,9 +168,8 @@ public class Main {
 		boolean result = false;
 		// This checks for works with similar letters compared to the start parameter
 		for (int i = 0; i < start.length(); i++) {
-			char[] optimizedWordArr = start.toCharArray();
-			optimizedWordArr[i] = end.charAt(i);
-			String optimizedWord = String.valueOf(optimizedWordArr);
+			String optimizedWord = start.substring(0, i) + end.charAt(i);
+			if(optimizedWord.length() < start.length()) optimizedWord += start.substring(i + 1, start.length());
 			if (visited.contains(optimizedWord)) 
 				continue;
 			if ((adjList.get(entryPoint)).contains(optimizedWord)) {
@@ -177,33 +179,28 @@ public class Main {
 			if (result)
 				return true;
 		}
-
-		// This checks for works with similar letters compared to the start parameter
-		// for (int i = 0; i < start.length(); i++) {
-		// 	char[] optimizedWordArr2 = start.toCharArray();
-		// 	if (optimizedWordArr2[i] == end.charAt(i))
-		// 		continue;
-		// 	char replacementLetter = optimizedWordArr2[i];
-		// 	String optimizedWord2 = String.valueOf(optimizedWordArr2);
-		// 	for(int k = 0; k < 26; k++) {
-		// 		char temp = (char)((((int)replacementLetter + k) % 26) + 65);
-		// 		optimizedWordArr2[i] = temp;
-		// 		optimizedWord2 = String.valueOf(optimizedWordArr2);
-		// 		if(wordSet.contains(optimizedWord2) && !visited.contains(optimizedWord2)) {
-		// 			visited.add(optimizedWord2);
-		// 			result = DFSHelperOpt(optimizedWord2, end);
-		// 			break;
-		// 		}
-		// 		if (result)
-		// 			return true;
-		// 	}
-		// }
-
-		for (int i = 1; i < (adjList.get(entryPoint)).size(); i++) {
-			String nextWord = adjList.get(entryPoint).get(i);
-			if (visited.contains(nextWord)) 
+		LinkedList<String> currentWordList = new LinkedList<String>(adjList.get(entryPoint));
+		boolean firstReorder = true;
+		boolean wordsWrapped = false;
+		String firstReorderedWord = new String();
+		int stringDiffAmt = stringDiff(start, end);
+		for (int i = 1; i < currentWordList.size(); i++) {
+			String nextWord = currentWordList.get(i);
+			if (visited.contains(nextWord) || stringDiff(nextWord, end) > stringDiffAmt)
 				continue;
+			if (stringDiff(nextWord, end) > stringDiffAmt && !wordsWrapped) {
+				if (nextWord.equals(firstReorderedWord)) {
+					wordsWrapped = true;
+				}
+				if (firstReorder) {
+					firstReorderedWord = nextWord;
+					firstReorder = false;
+				}
+				currentWordList.addLast(nextWord);
+			} 
+			// else 
 			result = DFSHelperOpt(nextWord, end);
+			stringDiffAmt = stringDiff(nextWord, end);
 			if (result)
 				return true;
 		}
@@ -212,24 +209,38 @@ public class Main {
 		return false;
 	}
 
+	public static int stringDiff(String word1, String word2) {
+		int counter = 0;
+		for (int i = 0; i < word1.length(); i++) {
+			if(word1.charAt(i) != word2.charAt(i)) {
+				counter++;
+			}
+		}
+		return counter;
+	}
+
 	// Recursive Algorithm of traversing the graph via Depth First Search
 	public static boolean DFSHelperRec(String start, String end) {
 		int entryPoint = getWordIndex(start);
-		// checks if the entry point is a valid index
-		visited.add(start);
+		int endPoint = getWordIndex(end);
+		if ((adjList.get(endPoint)).size() == 1 && visited.isEmpty()) 
+			return false;
 		wordladder.add(start);
-		if((adjList.get(entryPoint)).peek().equals(end)) return true;
-
+		visited.add(start);
+		if ((adjList.get(entryPoint)).peek().equals(end)) 
+			return true;
 		boolean result = false;
-		for(int i = 1; i < (adjList.get(entryPoint)).size(); i++) {
-			if (result) return true;
+		for (int i = 1; i < (adjList.get(entryPoint)).size(); i++) {
 			String nextWord = adjList.get(entryPoint).get(i);
-			if (visited.contains(nextWord)) 
+			if (visited.contains(nextWord))
 				continue;
 			result = DFSHelperRec(nextWord, end);
+			if (result)
+				return true;
 		}
-		if (!result) wordladder.remove(wordladder.size() - 1);
-		return result;
+		if (!result) 
+			wordladder.remove(wordladder.size() - 1);
+		return false;
 	}
 
 	public static void addNeighbors(String Node, Queue<String> neighbors) {
@@ -327,7 +338,17 @@ public class Main {
 		clearWordLadder();
 		start = start.toUpperCase();
 		end = end.toUpperCase();
-		if (DFSHelperOpt(start, end)) return wordladder;
+		// return wordladder;
+		// if ((cycleWords.contains(start) || cycleWords.contains(end)) && !oneLetterDiff(start, end, 5)) {
+		// 	ArrayList<String> empty = new ArrayList<String>();
+		// 	empty.add(start); 
+		// 	empty.add(end);
+		// 	return empty;
+		// } else 
+		if (DFSHelperOpt(start, end)) {
+		// if (DFSHelperRec(start, end)) {
+		return new ArrayList<String>(wordladder);
+		}
 		ArrayList<String> empty = new ArrayList<String>();
 		empty.add(start); 
 		empty.add(end);
@@ -337,13 +358,13 @@ public class Main {
 
 	
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
-		// TODO some code
 		clearWordLadder();
 		start = start.toUpperCase();
 		end = end.toUpperCase();
 		if (BFSHelperIt(start, end)) {
 			reverse();
-			return wordladder;
+			// return wordladder;
+			return new ArrayList<String>(wordladder);
 		}
 		ArrayList<String> empty = new ArrayList<String>();
 		empty.add(start); 
@@ -361,7 +382,14 @@ public class Main {
 				return;
 			}
 		}
-		System.out.println("a " + Integer.toString(ladder.size() - 2) + "-rung word ladder exists between " + ladder.get(0).toLowerCase() + " and " + ladder.get(ladder.size() - 1).toLowerCase() + ".");
+		String size = new String();
+		if (ladder.get(0).equals(ladder.get(ladder.size() - 1))) {
+			size = "0";
+		} else {
+			size = Integer.toString(ladder.size() - 2);
+		}
+
+		System.out.println("a " + size + "-rung word ladder exists between " + ladder.get(0).toLowerCase() + " and " + ladder.get(ladder.size() - 1).toLowerCase() + ".");
 		for (int i = 0; i < ladder.size(); i++) {
 			System.out.println(ladder.get(i).toLowerCase());
 		}
@@ -387,6 +415,19 @@ public class Main {
 
 	/**(**************** Initialize BFS/DFS ******************/
 	/*									   					 */
+	public static void initializeCycle() {
+		for (String element: wordSet) {
+			int entryPoint = getWordIndex(element);
+			if (adjList.get(entryPoint).size() == 2) {
+				int cycleLink = getWordIndex(adjList.get(entryPoint).get(1));
+				if (adjList.get(cycleLink).size() == 2) {
+					cycleWords.add(element);
+
+				}
+			}
+		}
+	}
+
 	public static void initializeAdj() {
 		for (String element: wordSet) {
 			LinkedList<String> currentWordList = initializeAdjHelper(element);
@@ -430,7 +471,7 @@ public class Main {
 			/* *** Modified for DEBUGGING purposes *** 
 			 * *** MAKE SURE TO REVERT CHANGES ***
 			 */
-			String fileName = "five_letter_words.txt";
+			String fileName = "/Users/mxchen/Documents/UT/Fall 2020/EE 422C/Github Projects/five_letter_words.txt";
 			if (DEBUG_SHORT) fileName = "short_dict.txt"; // this line is custom
 			infile = new Scanner (new File(fileName));
 		} catch (FileNotFoundException e) {

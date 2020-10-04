@@ -4,9 +4,9 @@ J = java
 PACKAGE = assignment3
 MAIN = Main
 # default HEAP size is 128MB
-HEAP = 128m
+HEAP = 1024m
 # default STACK size is 512KB
-STACK = 2m
+STACK = 1024m
 
 default:
 	$(JC) $(PACKAGE)/$(MAIN).java
@@ -15,9 +15,9 @@ test: clean default
 	$(J) $(PACKAGE).$(MAIN)
 testm: clean default
 	clear
-	$(J) -Xss$(STACK) -Xmx$(HEAP) $(PACKAGE).$(MAIN)
+	$(J) -Xss$(STACK) -Xms$(HEAP) $(PACKAGE).$(MAIN)
 output: clean default
-	$(J) -Xss$(STACK) -Xmx$(HEAP) $(PACKAGE).$(MAIN) > output.txt
+	$(J) -Xss$(STACK) -Xms$(HEAP) $(PACKAGE).$(MAIN) > output.txt
 clean:
 	$(RM) $(PACKAGE)/*.class
 rerun: clean default test
