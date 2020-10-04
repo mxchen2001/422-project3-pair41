@@ -20,15 +20,17 @@ import java.io.*;
 public class Main {
 	
 	// static variables and constants only here.
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = true;		//debugging mode
 	// private static LinkedList<String> adj[]; 
 	private static Set<String> wordSet;
 	/***** For BFS and DFS *****/
-	private static Queue<LinkedList<String>> adjList; //Adjacency Lists 
-	
+	private static ArrayList<LinkedList<String>> adjList; //Adjacency Lists 
+	//public static LinkedList<String> adjList;
+	private static ArrayList<String> visited = new ArrayList<String>();
 	private static ArrayList<String> input;
+	static ArrayList<String> DFS_list = new ArrayList<String>();
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {	
 		
 		Scanner kb;	// input Scanner for commands
 		PrintStream ps;	// output file, for student testing and grading only
@@ -42,8 +44,17 @@ public class Main {
 			ps = System.out;			// default output to Stdout
 		}
 		initialize();
-
 		
+		parse(kb);	//returns input array
+		getInput();
+		
+		
+		//System.out.println(wordSet);
+		//System.out.println(adjList);
+			
+		System.out.println();
+		
+		getWordLadderDFS(input.get(0),input.get(1));
 		// TODO methods to read in words, output ladder
 	}
 	
@@ -51,9 +62,9 @@ public class Main {
 		// initialize your static variables or constants here.
 		// We will call this method before running our JUNIT tests.  So call it 
 		// only once at the start of main.
-		wordSet = makeDictionary();
-		adjList = new LinkedList<LinkedList<String>>();
-		if (DEBUG) System.out.println(wordSet);
+		wordSet = makeDictionary();		//wordset is a set of strings
+		//adjList = new LinkedList<String>();
+		adjList = new ArrayList<LinkedList<String>>();		if (DEBUG) System.out.println(wordSet);
 		initializeAdj();
 		if (DEBUG) printAdjList();
 	}
@@ -65,16 +76,21 @@ public class Main {
 	 */
 	public static ArrayList<String> parse(Scanner keyboard) {
 		// TO DO
-		String start = keyboard.nextLine();
-		String end = keyboard.nextLine();
-
+		String start;
+		String end;
+		String userInput[]= keyboard.nextLine().split(" ");
+		start = userInput[0];
+		end = userInput[1];
+		
 		// Condition that the either input is "/quit"
 		if (start.equals("/quit") || end.equals("/quit")) {
 			return new ArrayList<String>();
 		}
 		ArrayList<String> input = new ArrayList<String>();
+		
+		setInput(input);
 		input.add(start);
-		input.add(end);
+		input.add(end);			//recieved input
 
 		return input;
 	}
@@ -85,15 +101,57 @@ public class Main {
 		// If ladder is empty, return list with just start and end.
 		// TODO some code
 		
-
+		DFS_list.clear();
+		visited.clear();
+//		if(dfs(start,end,visited).size() == 1) {
+//			System.out.println("no word ladder can be found between "+start+ " and " +end+".");
+//		
+//		}else {
+		int counter=0;
+			System.out.println(dfs(start, end, visited,counter));
+			System.out.println(counter);
+		//}
 
 		return null; // replace this line later with real return
 	}
+	public static ArrayList<String> dfs(String start, String end, ArrayList<String> visited, int counter) {
+		counter++;
+		start = start.toUpperCase();
+		end = end.toUpperCase();
+		int startIndex = getWordIndex(start);
+		DFS_list.add(start);
+		visited.add(start);
+		
+		if(start.equals(end)) {
+			return DFS_list;
+		}
+		for(int i = 1; i < (adjList.get(startIndex)).size(); i++) {
+			
+			String nextWord = adjList.get(startIndex).get(i);
+			if(visited.contains(nextWord)) {
+				continue;
+			}
+
+			dfs(nextWord, end, visited,counter);
+			if(DFS_list.get(i).equals(end)) {
+				return DFS_list;
+			}
+		}
+		
+		return DFS_list;	//change to actual return statement
+	}
+	
+	
+	
+	
 	
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
 		
 		// TODO some code
 		
+    	
+    	
+    	
 		return null; // replace this line later with real return
 	}
     
@@ -135,12 +193,12 @@ public class Main {
 
 	}
 
-	public static LinkedList<String> initializeAdjHelper (String word) {
+	public static LinkedList<String> initializeAdjHelper (String word) {//checks adjadency
 		LinkedList<String> currentlyAdj = new LinkedList<String>();
 		currentlyAdj.add(word);
 		for(String element: wordSet) {
 			if (oneLetterDiff(word, element, word.length())) {
-				currentlyAdj.add(element);
+				currentlyAdj.add(element);		//add if one letter different from start word
 			}
 		}
 		return currentlyAdj;
@@ -155,6 +213,22 @@ public class Main {
 		}
 		if(counter == 1) return true;
 		return false;
+	}
+	public static int getWordIndex(String start) {
+		// COULD BE UPDATED WITH BINARY SEARCH FOR OPTIMIZATION
+
+		for (int i = 0; i < adjList.size(); i++) {
+			String currentHead = (adjList.get(i)).get(0);
+			if (currentHead.equals(start)) {
+				if (DEBUG) print(start + " is indexed at: " + i);
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public static void print(Object in) {
+		System.out.println(in);
 	}
 
 	/*														 */
@@ -182,5 +256,13 @@ public class Main {
 			words.add(infile.next().toUpperCase());
 		}
 		return words;
+	}
+
+	public static ArrayList<String> getInput() {
+		return input;
+	}
+
+	public static void setInput(ArrayList<String> input) {
+		Main.input = input;
 	}
 }
