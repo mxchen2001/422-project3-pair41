@@ -1,3 +1,4 @@
 *.class
 .vscode
 .DS_Store
+assignment3_sample_grader*
