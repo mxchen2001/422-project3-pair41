@@ -84,9 +84,12 @@ public class CustomTest {
 
 	private boolean oneLetterDiffLadder(ArrayList<String> ladder) {
 		boolean flag = true;
+		if (ladder.size() == 2) {
+			return true;
+		}
 		for (int i = 0; i < ladder.size() - 1; i++) {
 			System.out.println(ladder.get(i) + " and "+  ladder.get(i + 1));
-			flag = (flag || oneLetterDiff(ladder.get(i), ladder.get(i + 1), 5));
+			flag = oneLetterDiff(ladder.get(i), ladder.get(i + 1), 5);
 		}
 		return flag;
 	}
