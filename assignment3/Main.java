@@ -15,13 +15,14 @@
 
 package assignment3;
 import java.util.*;
-
 import java.io.*;
 
 public class Main {
-	/******* DEBUG flags *******/
-	private static final boolean DEBUG = false;
-	private static final boolean DEBUG_SHORT = false;
+	
+	// static variables and constants only here.
+	private static final boolean DEBUG = true;		//debugging mode
+	// private static LinkedList<String> adj[]; 
+	private static Set<String> wordSet;
 	/***** For BFS and DFS *****/
 	private static ArrayList<LinkedList<String>> adjList; //Adjacency Lists 
 	public static Set<String> wordSet;
@@ -52,8 +53,6 @@ public class Main {
 			printLadder(getWordLadderDFS(words.get(0), words.get(1)));
 			printLadder(getWordLadderBFS(words.get(0), words.get(1)));
 		}
-			
-		// TODO methods to read in words, output ladder
 	}
 	
 	public static void initialize() {
@@ -76,17 +75,19 @@ public class Main {
 	 */
 	public static ArrayList<String> parse(Scanner keyboard) {
 		// TO DO
-		String words = keyboard.nextLine();
-		if(words.length() != 11) return new ArrayList<String>();
-		String start = words.substring(0, 5);
-		String end = words.substring(6, 11);
-		start = start.toUpperCase();
-		end = end.toUpperCase();
+		String start;
+		String end;
+		String userInput[]= keyboard.nextLine().split(" ");
+		start = userInput[0];
+		end = userInput[1];
+		
 		// Condition that the either input is "/quit"
-		if (start.toLowerCase().equals("/quit") || end.toLowerCase().equals("/quit")) {
+		if (start.equals("/quit") || end.equals("/quit")) {
 			return new ArrayList<String>();
 		}
 		ArrayList<String> input = new ArrayList<String>();
+		
+		setInput(input);
 		input.add(start);
 		input.add(end);
 		if (DEBUG) { System.out.println("Starting Word: " + start); System.out.println("Ending Word: " + end); }
@@ -94,13 +95,24 @@ public class Main {
 		return input;
 	}
 
-	/******************* Helper Functions ********************/
-	/*														 */
-
-	// Clear the WordLadder for new output
-	public static void clearWordLadder() {
-		wordladder.clear();
+	public static ArrayList<String> getWordLadderDFS(String start, String end) {
+		
+		// Returned list should be ordered start to end.  Include start and end.
+		// If ladder is empty, return list with just start and end.
+		// TODO some code
+		
+		DFS_list.clear();
 		visited.clear();
+//		if(dfs(start,end,visited).size() == 1) {
+//			System.out.println("no word ladder can be found between "+start+ " and " +end+".");
+//		
+//		}else {
+		int counter=0;
+			System.out.println(dfs(start, end, visited,counter));
+			System.out.println(counter);
+		//}
+
+		return null; // replace this line later with real return
 	}
 
 	// Get the index of 'start' inside adjacency array
@@ -279,40 +291,29 @@ public class Main {
 			addNeighbors(currentWord, neighbors);
 			addNeighbors(currentWord, currentNode);
 			wordStack.add(currentNode);
+=======
+	public static ArrayList<String> dfs(String start, String end, ArrayList<String> visited, int counter) {
+		counter++;
+		start = start.toUpperCase();
+		end = end.toUpperCase();
+		int startIndex = getWordIndex(start);
+		DFS_list.add(start);
+		visited.add(start);
+		
+		if(start.equals(end)) {
+			return DFS_list;
 		}
-		return false;
-	}
-
-	// Recursive Algorithm of traversing the graph via Breadth First Search
-	public static boolean BFSHelperRec(String start, String end, Queue<String> neighbors) {
-		if(neighbors.isEmpty()) return false;
-		Queue<String> neighborsCopy = new LinkedList<String>();
-		for (String element : neighbors)
-			neighborsCopy.add(element);
-		ArrayList<LinkedList<String>> wordStack = new ArrayList<LinkedList<String>>(); 
-
-		for (String neighbor : neighborsCopy) {
-			if(visited.contains(neighbor))
+		for(int i = 1; i < (adjList.get(startIndex)).size(); i++) {
+			
+			String nextWord = adjList.get(startIndex).get(i);
+			if(visited.contains(nextWord)) {
 				continue;
-			if(neighbor.equals(end)) {
-				wordladder.add(neighbor);
-				return true;
 			}
-			ArrayList<String> distantNeighbors = getNeighbors(neighbor);
-			LinkedList<String> currentNode = new LinkedList<String>();
-			currentNode.add(neighbor);
-			if (distantNeighbors.size() == 0)
-				return false;
 
-			visited.add(neighbor);
-			for (int i = 0; i < distantNeighbors.size(); i++) {
-				if(visited.contains(distantNeighbors.get(i)))
-					continue;
-				neighbors.add(distantNeighbors.get(i));
-				currentNode.add(distantNeighbors.get(i));
+			dfs(nextWord, end, visited,counter);
+			if(DFS_list.get(i).equals(end)) {
+				return DFS_list;
 			}
-			neighbors.remove();
-			wordStack.add(currentNode);
 		}
 		boolean result = (false || BFSHelperRec(start, end, neighbors));
 
@@ -354,10 +355,13 @@ public class Main {
 		empty.add(end);
 		return empty;
 	}
-
-
+	
+	
+	
+	
 	
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
+
 		clearWordLadder();
 		start = start.toUpperCase();
 		end = end.toUpperCase();
@@ -372,6 +376,7 @@ public class Main {
 		return empty;
 	}
     
+	// TODO
 	// Other private static methods here
 	/********************* For Debugging *********************/
 	/*														 */
@@ -391,7 +396,7 @@ public class Main {
 
 		System.out.println("a " + size + "-rung word ladder exists between " + ladder.get(0).toLowerCase() + " and " + ladder.get(ladder.size() - 1).toLowerCase() + ".");
 		for (int i = 0; i < ladder.size(); i++) {
-			System.out.println(ladder.get(i).toLowerCase());
+			System.out.println(ladder.get(i));
 		}
 	}
 
@@ -403,8 +408,8 @@ public class Main {
 		}
 		for (LinkedList<String> list: adjList) {
 			System.out.print(index++);
-			for(int i = 0; i < list.size(); i++) {
-				System.out.printf(" - %s", list.get(i));
+			for(String word: list) {
+				System.out.printf(" - %s", word);
 			}
 			System.out.println();
 		}
@@ -436,12 +441,12 @@ public class Main {
 
 	}
 
-	public static LinkedList<String> initializeAdjHelper (String word) {
+	public static LinkedList<String> initializeAdjHelper (String word) {//checks adjadency
 		LinkedList<String> currentlyAdj = new LinkedList<String>();
 		currentlyAdj.add(word);
 		for(String element: wordSet) {
 			if (oneLetterDiff(word, element, word.length())) {
-				currentlyAdj.add(element);
+				currentlyAdj.add(element);		//add if one letter different from start word
 			}
 		}
 		return currentlyAdj;
@@ -457,6 +462,22 @@ public class Main {
 		if(counter == 1) return true;
 		return false;
 	}
+	public static int getWordIndex(String start) {
+		// COULD BE UPDATED WITH BINARY SEARCH FOR OPTIMIZATION
+
+		for (int i = 0; i < adjList.size(); i++) {
+			String currentHead = (adjList.get(i)).get(0);
+			if (currentHead.equals(start)) {
+				if (DEBUG) print(start + " is indexed at: " + i);
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public static void print(Object in) {
+		System.out.println(in);
+	}
 
 	/*														 */
 	/*********************************************************/
@@ -471,8 +492,8 @@ public class Main {
 			/* *** Modified for DEBUGGING purposes *** 
 			 * *** MAKE SURE TO REVERT CHANGES ***
 			 */
-			String fileName = "/Users/mxchen/Documents/UT/Fall 2020/EE 422C/Github Projects/five_letter_words.txt";
-			if (DEBUG_SHORT) fileName = "short_dict.txt"; // this line is custom
+			String fileName = "five_letter_words.txt";
+			if (DEBUG) fileName = "short_dict.txt"; // this line is custom
 			infile = new Scanner (new File(fileName));
 		} catch (FileNotFoundException e) {
 			System.out.println("Dictionary File not Found!");
@@ -483,5 +504,13 @@ public class Main {
 			words.add(infile.next().toUpperCase());
 		}
 		return words;
+	}
+
+	public static ArrayList<String> getInput() {
+		return input;
+	}
+
+	public static void setInput(ArrayList<String> input) {
+		Main.input = input;
 	}
 }
