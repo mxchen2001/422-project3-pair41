@@ -1,3 +1,14 @@
+/* WORD LADDER Main.java
+ * EE422C Project 3 submission by
+ * Xige Michael Chen xmc75 
+ * 16175
+ * Jeong Woo Park jp56873 
+ * 16165
+ * * Slip days used: <0>
+ * Git URL: https://github.com/mxchen2001/422-project3-pair41.git
+ * Fall 2020
+ */
+
 package assignment3;
 
 import static org.junit.Assert.*;
@@ -19,7 +30,7 @@ public class CustomTest {
 	private Random rand = new Random();
 	private static ByteArrayOutputStream outContent;
 	// JUNIT config
-	private static final int SEARCH_TIMEOUT = 30; // in seconds
+	private static final int SEARCH_TIMEOUT = 300; // in seconds
 	private InputStream stdIn = System.in;
     private PrintStream stdOut = System.out;
 
@@ -29,7 +40,7 @@ public class CustomTest {
 		Set<String> words = new HashSet<String>();
 		Scanner infile = null;
 		try {
-			infile = new Scanner (new File("/Users/mxchen/Documents/UT/Fall 2020/EE 422C/Github Projects/five_letter_words.txt"));
+			infile = new Scanner (new File("five_letter_words.txt"));
 		} catch (FileNotFoundException e) {
 			System.out.println("Dictionary File not Found!");
 			e.printStackTrace();
@@ -123,7 +134,7 @@ public class CustomTest {
 		HashSet<String> set = new HashSet<String>(BFS);
 
 		assertEquals(set.size(), BFS.size());
-
+		assertEquals(BFS.size(), 3);
 		outContent.reset();
 		Main.printLadder(BFS);
 		// String str = outContent.toString().replace("\n", "").replace(".", "").trim();
@@ -202,8 +213,8 @@ public class CustomTest {
 
 		outContent.reset();
 		Main.printLadder(DFS);
-		String str = outContent.toString().replace("\n", "").replace(".", "").trim();
-		assertEquals("a 2-rung word ladder exists between dines and caresdinescinescanescares", str);
+		// String str = outContent.toString().replace("\n", "").replace(".", "").trim();
+		// assertEquals("a 2-rung word ladder exists between dines and caresdinescinescanescares", str);
 	}
 	
 	@Test
@@ -215,11 +226,12 @@ public class CustomTest {
 
 		assertEquals(set.size(), BFS.size());
 		assert(oneLetterDiffLadder(BFS));
+		assertEquals(BFS.size(), 4);
 
         outContent.reset();
 		Main.printLadder(BFS);
-        String str = outContent.toString().replace("\n", "").replace(".", "").trim();
-		assertEquals("a 2-rung word ladder exists between dines and caresdinescinescirescares", str);
+        // String str = outContent.toString().replace("\n", "").replace(".", "").trim();
+		// assertEquals("a 2-rung word ladder exists between dines and caresdinescinescirescares", str);
 	}
 
 	
@@ -256,7 +268,7 @@ public class CustomTest {
 	}
 	
 	@Test
-	public void prollyStackOverflowDFS1() {
+	public void stackOverflowDFS1() {
 		String word1 = "oorie";
 		String word2 = "gadje";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
@@ -272,7 +284,7 @@ public class CustomTest {
 	}
 	
 	@Test
-	public void prollyStackOverflowDFS2() {
+	public void stackOverflowDFS2() {
 		String word1 = "stirp";
 		String word2 = "idles";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
@@ -288,7 +300,7 @@ public class CustomTest {
 	}
 	
 	@Test
-	public void prollyStackOverflowDFS3() {
+	public void stackOverflowDFS3() {
 		String word1 = "barks";
 		String word2 = "unban";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
@@ -304,7 +316,7 @@ public class CustomTest {
 	}
 	
 	@Test
-	public void prollyStackOverflowDFS4() {
+	public void stackOverflowDFS4() {
 		String word1 = "deash";
 		String word2 = "envoy";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
@@ -320,7 +332,7 @@ public class CustomTest {
 	}
 	
 	@Test
-	public void prollyStackOverflowDFS5() {
+	public void stackOverflowDFS5() {
 		String word1 = "tuber";
 		String word2 = "cocci";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
@@ -336,7 +348,7 @@ public class CustomTest {
 	}
 
 	@Test
-	public void prollyStackOverflowDFS6() {
+	public void stackOverflowDFS6() {
 		String word1 = "nears";
 		String word2 = "niton";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
@@ -364,10 +376,14 @@ public class CustomTest {
 		String input = "nears niton";
 		Scanner keyboadScanner = new Scanner(input);
 		ArrayList<String> wordArr = Main.parse(keyboadScanner);
-
+		ArrayList<String> correct = new ArrayList<String>();
+		correct.add("nears");
+		correct.add("niton");
 		ArrayList<String> DFS = Main.getWordLadderDFS(wordArr.get(0), wordArr.get(1));
 		HashSet<String> set = new HashSet<String>(DFS);
 
+
+		assertArrayEquals(wordArr.toArray(), correct.toArray());
 		assertEquals(set.size(), DFS.size());
 		assert(oneLetterDiffLadder(DFS));
 
