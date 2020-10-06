@@ -2,6 +2,7 @@ package assignment3;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
@@ -18,7 +19,9 @@ public class CustomTest {
 	private Random rand = new Random();
 	private static ByteArrayOutputStream outContent;
 	// JUNIT config
-	private static final int SEARCH_TIMEOUT = 300; // in seconds
+	private static final int SEARCH_TIMEOUT = 30; // in seconds
+	private InputStream stdIn = System.in;
+    private PrintStream stdOut = System.out;
 
 	
     // helper methods
@@ -89,11 +92,18 @@ public class CustomTest {
 		outContent = new ByteArrayOutputStream();
 		System.setOut(new PrintStream(outContent));
 	}
+
+	@After
+    public void teardown() {
+        System.setOut(stdOut);
+        System.setIn(stdIn);
+    }
+
 	
 	@Test
 	public void similarWord1DFS() {
-		String word1 = "world";
-		String word2 = "would";
+		String word1 = "great";
+		String word2 = "gloat";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
 		HashSet<String> set = new HashSet<String>(DFS);
 		
@@ -101,14 +111,14 @@ public class CustomTest {
 		
         outContent.reset();
 		Main.printLadder(DFS);
-        String str = outContent.toString().replace("\n", "").replace(".", "").trim();
-		assertEquals("a 0-rung word ladder exists between world and wouldworldwould", str);
+        // String str = outContent.toString().replace("\n", "").replace(".", "").trim();
+		// assertEquals("a 1-rung word ladder exists between great and wouldworldwould", str);
 	}
 
 	@Test
 	public void similarWord1BFS() {
-		String word1 = "world";
-		String word2 = "would";
+		String word1 = "great";
+		String word2 = "gloat";
 		ArrayList<String> BFS = Main.getWordLadderBFS(word1, word2);
 		HashSet<String> set = new HashSet<String>(BFS);
 
@@ -116,8 +126,8 @@ public class CustomTest {
 
 		outContent.reset();
 		Main.printLadder(BFS);
-		String str = outContent.toString().replace("\n", "").replace(".", "").trim();
-		assertEquals("a 0-rung word ladder exists between world and wouldworldwould", str);
+		// String str = outContent.toString().replace("\n", "").replace(".", "").trim();
+		// assertEquals("a 0-rung word ladder exists between world and wouldworldwould", str);
 	}
 	
 	@Test
@@ -330,6 +340,32 @@ public class CustomTest {
 		String word1 = "nears";
 		String word2 = "niton";
 		ArrayList<String> DFS = Main.getWordLadderDFS(word1, word2);
+		HashSet<String> set = new HashSet<String>(DFS);
+
+		assertEquals(set.size(), DFS.size());
+		assert(oneLetterDiffLadder(DFS));
+
+		outContent.reset();
+		Main.printLadder(DFS);
+		String str = outContent.toString().replace("\n", "").replace(".", "").trim();
+		assertEquals("no word ladder can be found between nears and niton", str);
+	}
+
+	@Test
+	public void parseQuit() throws IOException {
+		String input = "/quit";
+		Scanner keyboadScanner = new Scanner(input);
+		ArrayList<String> empty = Main.parse(keyboadScanner);
+		assertEquals(empty.isEmpty(), true);
+	}
+
+	@Test
+	public void parseFull() throws IOException {	
+		String input = "nears niton";
+		Scanner keyboadScanner = new Scanner(input);
+		ArrayList<String> wordArr = Main.parse(keyboadScanner);
+
+		ArrayList<String> DFS = Main.getWordLadderDFS(wordArr.get(0), wordArr.get(1));
 		HashSet<String> set = new HashSet<String>(DFS);
 
 		assertEquals(set.size(), DFS.size());
